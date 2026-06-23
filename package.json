@@ -1,0 +1,6 @@
+{
+  "name": "bts-sio-suivi",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Suivi recrutement BTS SIO — sync temps réel Supabase"
+}

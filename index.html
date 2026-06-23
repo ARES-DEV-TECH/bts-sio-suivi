@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Suivi recrutement — BTS SIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #FAFAF7;
+    --surface: #FFFFFF;
+    --surface-2: #F2F0E9;
+    --text: #1B1F27;
+    --text-soft: #6B7079;
+    --text-faint: #9CA0A8;
+    --border: #E6E3D9;
+    --accent: #2F4858;
+    --accent-soft: #E7EDEF;
+    --ring-track: #E6E3D9;
+
+    --gray-bg:#EFEDE6; --gray-fg:#6B6F66;
+    --amber-bg:#FCEFD8; --amber-fg:#9A5B0E;
+    --green-bg:#E1F1E3; --green-fg:#1F6D34;
+    --orange-bg:#FBE6DC; --orange-fg:#A0481C;
+    --red-bg:#FAE1E0; --red-fg:#A12A24;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:28px 20px 60px;}
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:22px;
+    margin:0; letter-spacing:-0.01em;
+  }
+  .sub{color:var(--text-soft); font-size:13px; margin-top:4px;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:24px; flex-wrap:wrap;}
+  .ring-block{display:flex; align-items:center; gap:14px;}
+  .ring-num{font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:600;}
+  .ring-label{font-size:12px; color:var(--text-soft);}
+
+  .stats{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:24px;}
+  @media (max-width:760px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  .stat-card{
+    border-radius:12px; padding:12px 14px; cursor:pointer; border:1.5px solid transparent;
+    background:var(--surface-2); transition:transform .12s ease;
+    user-select:none;
+  }
+  .stat-card:hover{transform:translateY(-1px);}
+  .stat-card.active{border-color:var(--accent);}
+  .stat-num{font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:600; line-height:1;}
+  .stat-label{font-size:11.5px; margin-top:4px; font-weight:500;}
+
+  .panel{
+    background:var(--surface); border:1px solid var(--border); border-radius:14px;
+    padding:18px 20px; margin-bottom:20px;
+  }
+  .panel h2{font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:600; margin:0 0 14px;}
+  .charts{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media (max-width:760px){ .charts{grid-template-columns:1fr;} }
+  .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; font-size:12px; color:var(--text-soft);}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
+
+  .controls{display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap;}
+  .search{
+    flex:1; min-width:180px; padding:9px 12px; border-radius:10px; border:1px solid var(--border);
+    font-size:13.5px; font-family:inherit; background:var(--surface);
+  }
+  .search:focus{outline:none; border-color:var(--accent);}
+  .filter-chip{
+    font-size:12px; padding:7px 12px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-soft); cursor:pointer;
+  }
+  .filter-chip.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+  .list{display:flex; flex-direction:column; gap:8px;}
+  .row{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:11px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface);
+    flex-wrap:wrap;
+  }
+  .who{min-width:170px;}
+  .name{font-weight:500; font-size:14px;}
+  .tel{font-size:12px; color:var(--text-faint); margin-top:1px;}
+  .pills{display:flex; gap:6px; flex-wrap:wrap;}
+  .pill{
+    font-size:11.5px; padding:6px 10px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-soft); cursor:pointer; font-weight:500;
+    transition:transform .1s;
+  }
+  .pill:hover{transform:translateY(-1px);}
+  .pill.sel-a_contacter{background:var(--gray-bg); color:var(--gray-fg); border-color:transparent;}
+  .pill.sel-rdv_pris{background:var(--amber-bg); color:var(--amber-fg); border-color:transparent;}
+  .pill.sel-rdv_realise{background:var(--green-bg); color:var(--green-fg); border-color:transparent;}
+  .pill.sel-no_show{background:var(--orange-bg); color:var(--orange-fg); border-color:transparent;}
+  .pill.sel-no_go{background:var(--red-bg); color:var(--red-fg); border-color:transparent;}
+
+  .empty{text-align:center; color:var(--text-faint); font-size:13px; padding:30px 0;}
+  .footer-note{font-size:11.5px; color:var(--text-faint); margin-top:18px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>Suivi recrutement — BTS SIO</h1>
+      <div class="sub" id="sub-count">Chargement…</div>
+      <div class="sub" id="share-note" style="color:#9A5B0E;">Données partagées en temps réel — visibles et modifiables par toute personne ayant le lien</div>
+    </div>
+    <div class="ring-block">
+      <button id="export-btn" class="filter-chip" style="cursor:pointer;">Exporter</button>
+      <button id="report-btn" class="filter-chip" style="cursor:pointer;">Export reporting</button>
+      <label class="filter-chip" style="cursor:pointer;">Importer<input id="import-input" type="file" accept="application/json" style="display:none;"></label>
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="23" fill="none" stroke="var(--ring-track)" stroke-width="6"/>
+        <circle id="ring-progress" cx="28" cy="28" r="23" fill="none" stroke="#2F4858" stroke-width="6"
+          stroke-linecap="round" transform="rotate(-90 28 28)" stroke-dasharray="0 1000"/>
+      </svg>
+      <div>
+        <div class="ring-num" id="ring-num">0%</div>
+        <div class="ring-label">traités</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats" id="stat-cards"></div>
+
+  <div class="panel">
+    <h2>Répartition des statuts</h2>
+    <div class="charts">
+      <div>
+        <div style="position:relative; height:200px;">
+          <canvas id="donut" role="img" aria-label="Répartition des candidats par statut">Graphique de répartition des statuts</canvas>
+        </div>
+      </div>
+      <div>
+        <div style="position:relative; height:200px;">
+          <canvas id="bars" role="img" aria-label="Nombre de candidats par statut">Graphique en barres des statuts</canvas>
+        </div>
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Candidats</h2>
+    <div class="controls">
+      <input class="search" id="search" type="text" placeholder="Rechercher un nom ou un prénom…" />
+    </div>
+    <div class="controls" id="filter-chips"></div>
+    <div class="list" id="list"></div>
+    <div class="empty" id="empty" style="display:none;">Aucun candidat ne correspond à ce filtre.</div>
+  </div>
+
+  <div class="footer-note">Synchronisation automatique entre tous les utilisateurs. — <span id="save-status"></span></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://aqqtlintzpxfvvqcawli.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_uiF5dqzNzgfFmY_6MwWm_g_YEPzYnDp';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const STATUTS = [
+  { id:'a_contacter', label:'NRP', fg:'#6B6F66', bg:'#EFEDE6' },
+  { id:'rdv_pris', label:'RDV pris', fg:'#9A5B0E', bg:'#FCEFD8' },
+  { id:'rdv_realise', label:'RDV réalisé', fg:'#1F6D34', bg:'#E1F1E3' },
+  { id:'no_show', label:'No show', fg:'#A0481C', bg:'#FBE6DC' },
+  { id:'no_go', label:'No go', fg:'#A12A24', bg:'#FAE1E0' },
+];
+const STATUT_MAP = Object.fromEntries(STATUTS.map(s=>[s.id,s]));
+
+const DEFAULT_CANDIDATES = [{"id": "c1", "tel": "0769408392", "nom": "MOREAU", "prenom": "Tom", "statut": "a_contacter"}, {"id": "c2", "tel": "0650272118", "nom": "EL JRAOUI", "prenom": "Achraf", "statut": "a_contacter"}, {"id": "c3", "tel": "0650321523", "nom": "KRYNYTSKYI", "prenom": "Dmytro", "statut": "a_contacter"}, {"id": "c4", "tel": "0651392353", "nom": "ALEXANDRE", "prenom": "Chloé", "statut": "rdv_realise"}, {"id": "c5", "tel": "0601740987", "nom": "DOST", "prenom": "Muzamil", "statut": "a_contacter"}, {"id": "c6", "tel": "0668442060", "nom": "HEMBERT", "prenom": "Maxime", "statut": "a_contacter"}, {"id": "c7", "tel": "0652220491", "nom": "DESNOYERS", "prenom": "Léa", "statut": "a_contacter"}, {"id": "c8", "tel": "0623046894", "nom": "CLERET", "prenom": "Nino", "statut": "a_contacter"}, {"id": "c9", "tel": "0661962124", "nom": "TJEGA", "prenom": "Kris", "statut": "rdv_pris"}, {"id": "c10", "tel": "0766662553", "nom": "LORENT--BONJOUR", "prenom": "Nathan", "statut": "a_contacter"}, {"id": "c11", "tel": "0766647677", "nom": "MARTIAL", "prenom": "Curtis", "statut": "rdv_realise"}, {"id": "c12", "tel": "0643483476", "nom": "KANIK", "prenom": "Cem", "statut": "a_contacter"}, {"id": "c13", "tel": "0769794592", "nom": "MEKKI", "prenom": "Ismaël", "statut": "a_contacter"}, {"id": "c14", "tel": "0630990392", "nom": "LE MOUX - TOURLET", "prenom": "Raphaël", "statut": "a_contacter"}, {"id": "c15", "tel": "0780581991", "nom": "FRUNZA", "prenom": "Marco", "statut": "a_contacter"}, {"id": "c16", "tel": "0784673341", "nom": "MAFI", "prenom": "Zuair", "statut": "a_contacter"}, {"id": "c17", "tel": "0748170828", "nom": "CHERGUI", "prenom": "Adam", "statut": "rdv_pris"}, {"id": "c18", "tel": "0617091219", "nom": "ADOU", "prenom": "Noah", "statut": "rdv_realise"}, {"id": "c19", "tel": "0767512725", "nom": "ABDOU", "prenom": "Faïz", "statut": "a_contacter"}, {"id": "c20", "tel": "0629475197", "nom": "KACEM", "prenom": "Shahyn", "statut": "a_contacter"}, {"id": "c21", "tel": "0749052925", "nom": "SETTA", "prenom": "Malik", "statut": "a_contacter"}, {"id": "c22", "tel": "0767971098", "nom": "DAVILLE", "prenom": "Jahid", "statut": "a_contacter"}, {"id": "c23", "tel": "0754874978", "nom": "YENBOU", "prenom": "Sofiane", "statut": "a_contacter"}, {"id": "c24", "tel": "0764249265", "nom": "MERHAB", "prenom": "Ethan", "statut": "rdv_pris"}, {"id": "c25", "tel": "0695992402", "nom": "MAILLARD-SALIN", "prenom": "Tudal", "statut": "a_contacter"}, {"id": "c26", "tel": "0659862071", "nom": "JOREL", "prenom": "Nolann", "statut": "rdv_realise"}, {"id": "c27", "tel": "0750081950", "nom": "DAUGE", "prenom": "Romain", "statut": "no_go"}, {"id": "c28", "tel": "0783772477", "nom": "BOUDRASSENE", "prenom": "Yacine", "statut": "rdv_pris"}, {"id": "c29", "tel": "0744867989", "nom": "GLEY", "prenom": "Hugo", "statut": "rdv_realise"}, {"id": "c30", "tel": "0640870236", "nom": "DOASSANS", "prenom": "Kériann", "statut": "a_contacter"}, {"id": "c31", "tel": "0664535492", "nom": "HAMZAOUI", "prenom": "Walid", "statut": "rdv_pris"}, {"id": "c32", "tel": "0640819735", "nom": "STROHM", "prenom": "Nicola", "statut": "no_go"}, {"id": "c33", "tel": "0667616127", "nom": "MOLA", "prenom": "Djaël", "statut": "a_contacter"}, {"id": "c34", "tel": "0768331345", "nom": "BATISTA", "prenom": "Angelo", "statut": "a_contacter"}, {"id": "c35", "tel": "0608833462", "nom": "VIONNET", "prenom": "Killian", "statut": "a_contacter"}, {"id": "c36", "tel": "0695646828", "nom": "PASTILHA CRAVEIRO", "prenom": "Julien", "statut": "a_contacter"}, {"id": "c37", "tel": "0783418072", "nom": "JEDOUANE", "prenom": "Adam", "statut": "a_contacter"}, {"id": "c38", "tel": "0603929675", "nom": "KOLAI", "prenom": "Manuella", "statut": "rdv_pris"}, {"id": "c39", "tel": "0786569596", "nom": "BEN-CHAABANE", "prenom": "Mehdi", "statut": "a_contacter"}, {"id": "c40", "tel": "0772158302", "nom": "ARABI", "prenom": "Anel", "statut": "a_contacter"}, {"id": "c41", "tel": "0749415858", "nom": "SEDRAKYAN", "prenom": "Erik", "statut": "a_contacter"}, {"id": "c42", "tel": "0782675018", "nom": "CONSTANTIN", "prenom": "Clément", "statut": "rdv_pris"}];
+
+let candidates = [];
+let activeFilter = 'all';
+let donutChart = null, barChart = null;
+let realtimeReady = false;
+const pendingOwnUpdates = new Set();
+
+function rowToCandidate(row) {
+  return { id: row.id, nom: row.nom, prenom: row.prenom, tel: row.tel, statut: row.statut };
+}
+
+function setSaveStatus(state) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  if (state === 'loading') {
+    el.textContent = 'Chargement…';
+    el.style.color = 'var(--text-faint)';
+  } else if (state === 'saving') {
+    el.textContent = 'Enregistrement…';
+    el.style.color = 'var(--text-faint)';
+  } else if (state === 'saved') {
+    el.textContent = realtimeReady ? 'Synchronisé en temps réel' : 'Enregistré';
+    el.style.color = realtimeReady ? '#1F6D34' : 'var(--text-faint)';
+  } else if (state === 'error') {
+    el.textContent = 'Erreur de synchronisation — réessaie dans un instant';
+    el.style.color = '#A12A24';
+  }
+}
+
+function applyRemoteRow(row) {
+  const item = rowToCandidate(row);
+  const i = candidates.findIndex(c => c.id === item.id);
+  if (i >= 0) candidates[i] = item;
+  else candidates.push(item);
+}
+
+async function fetchCandidates() {
+  const { data, error } = await supabase
+    .from('bts_sio_candidates')
+    .select('id, nom, prenom, tel, statut')
+    .order('id');
+  if (error) throw error;
+  return (data || []).map(rowToCandidate);
+}
+
+async function seedDefaults() {
+  const rows = DEFAULT_CANDIDATES.map(c => ({
+    ...c,
+    updated_at: new Date().toISOString()
+  }));
+  const { error } = await supabase.from('bts_sio_candidates').upsert(rows);
+  if (error) throw error;
+  return DEFAULT_CANDIDATES.slice();
+}
+
+async function loadData() {
+  setSaveStatus('loading');
+  try {
+    candidates = await fetchCandidates();
+    if (candidates.length === 0) {
+      candidates = await seedDefaults();
+    }
+    setSaveStatus('saved');
+  } catch (e) {
+    console.error('load error', e);
+    candidates = DEFAULT_CANDIDATES.slice();
+    setSaveStatus('error');
+  }
+}
+
+async function saveStatut(id, statut) {
+  const key = id + ':' + statut;
+  pendingOwnUpdates.add(key);
+  setSaveStatus('saving');
+  try {
+    const { error } = await supabase
+      .from('bts_sio_candidates')
+      .update({ statut, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+    setSaveStatus('saved');
+  } catch (e) {
+    console.error('save error', e);
+    setSaveStatus('error');
+    await loadData();
+    renderAll();
+  } finally {
+    setTimeout(() => pendingOwnUpdates.delete(key), 800);
+  }
+}
+
+async function saveAllCandidates() {
+  setSaveStatus('saving');
+  try {
+    const rows = candidates.map(c => ({
+      ...c,
+      updated_at: new Date().toISOString()
+    }));
+    const { error: upsertError } = await supabase.from('bts_sio_candidates').upsert(rows);
+    if (upsertError) throw upsertError;
+
+    const { data: existing, error: listError } = await supabase
+      .from('bts_sio_candidates')
+      .select('id');
+    if (listError) throw listError;
+
+    const keep = new Set(candidates.map(c => c.id));
+    const toDelete = (existing || []).map(r => r.id).filter(id => !keep.has(id));
+    if (toDelete.length) {
+      const { error: deleteError } = await supabase
+        .from('bts_sio_candidates')
+        .delete()
+        .in('id', toDelete);
+      if (deleteError) throw deleteError;
+    }
+    setSaveStatus('saved');
+  } catch (e) {
+    console.error('bulk save error', e);
+    setSaveStatus('error');
+    throw e;
+  }
+}
+
+function subscribeRealtime() {
+  supabase
+    .channel('bts-sio-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bts_sio_candidates' }, (payload) => {
+      if (payload.eventType === 'DELETE') {
+        const id = payload.old?.id;
+        if (id) candidates = candidates.filter(c => c.id !== id);
+        renderAll();
+        return;
+      }
+      const row = payload.new;
+      if (!row?.id) return;
+      const key = row.id + ':' + row.statut;
+      if (pendingOwnUpdates.has(key)) return;
+      applyRemoteRow(row);
+      renderAll();
+      setSaveStatus('saved');
+    })
+    .subscribe((status) => {
+      realtimeReady = status === 'SUBSCRIBED';
+      if (realtimeReady) setSaveStatus('saved');
+    });
+}
+
+function counts(){
+  const c = {}; STATUTS.forEach(s=>c[s.id]=0);
+  candidates.forEach(p=>{ c[p.statut] = (c[p.statut]||0)+1; });
+  return c;
+}
+
+function renderStats(){
+  const c = counts();
+  const wrap = document.getElementById('stat-cards');
+  wrap.innerHTML = '';
+  STATUTS.forEach(s=>{
+    const div = document.createElement('div');
+    div.className = 'stat-card' + (activeFilter===s.id ? ' active' : '');
+    div.style.background = s.bg;
+    div.innerHTML = `<div class="stat-num" style="color:${s.fg}">${c[s.id]}</div><div class="stat-label" style="color:${s.fg}">${s.label}</div>`;
+    div.onclick = ()=>{ activeFilter = activeFilter===s.id ? 'all' : s.id; renderAll(); };
+    wrap.appendChild(div);
+  });
+
+  const total = candidates.length;
+  const traites = total - c['a_contacter'];
+  const pct = total ? Math.round((traites/total)*100) : 0;
+  document.getElementById('sub-count').textContent = `${total} candidats — ${traites} traités, ${c['a_contacter']} NRP`;
+  document.getElementById('ring-num').textContent = pct + '%';
+  const circumference = 2*Math.PI*23;
+  document.getElementById('ring-progress').setAttribute('stroke-dasharray', `${(pct/100)*circumference} ${circumference}`);
+}
+
+function renderFilterChips(){
+  const wrap = document.getElementById('filter-chips');
+  wrap.innerHTML = '';
+  const allChip = document.createElement('div');
+  allChip.className = 'filter-chip' + (activeFilter==='all' ? ' active' : '');
+  allChip.textContent = 'Tous';
+  allChip.onclick = ()=>{ activeFilter='all'; renderAll(); };
+  wrap.appendChild(allChip);
+  STATUTS.forEach(s=>{
+    const chip = document.createElement('div');
+    chip.className = 'filter-chip' + (activeFilter===s.id ? ' active' : '');
+    chip.textContent = s.label;
+    chip.onclick = ()=>{ activeFilter = activeFilter===s.id ? 'all' : s.id; renderAll(); };
+    wrap.appendChild(chip);
+  });
+}
+
+function renderList(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  let shown = 0;
+  candidates
+    .slice()
+    .sort((a,b)=> (a.nom+a.prenom).localeCompare(b.nom+b.prenom))
+    .forEach(p=>{
+      if(activeFilter!=='all' && p.statut!==activeFilter) return;
+      const full = (p.nom+' '+p.prenom).toLowerCase();
+      if(q && !full.includes(q)) return;
+      shown++;
+      const row = document.createElement('div');
+      row.className = 'row';
+      const pillsHtml = STATUTS.map(s=>{
+        const sel = p.statut===s.id ? ' sel-'+s.id : '';
+        return `<div class="pill${sel}" data-id="${p.id}" data-statut="${s.id}">${s.label}</div>`;
+      }).join('');
+      row.innerHTML = `
+        <div class="who">
+          <div class="name">${p.nom} ${p.prenom}</div>
+          <div class="tel">${p.tel || '—'}</div>
+        </div>
+        <div class="pills">${pillsHtml}</div>
+      `;
+      list.appendChild(row);
+    });
+  document.getElementById('empty').style.display = shown===0 ? 'block' : 'none';
+
+  list.querySelectorAll('.pill').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-id');
+      const statut = el.getAttribute('data-statut');
+      const cand = candidates.find(c=>c.id===id);
+      if(cand){
+        cand.statut = statut;
+        renderAll();
+        await saveStatut(id, statut);
+      }
+    });
+  });
+}
+
+function renderCharts(){
+  const c = counts();
+  const labels = STATUTS.map(s=>s.label);
+  const data = STATUTS.map(s=>c[s.id]);
+  const colors = STATUTS.map(s=>s.fg);
+
+  if(donutChart) donutChart.destroy();
+  if(barChart) barChart.destroy();
+
+  donutChart = new Chart(document.getElementById('donut'), {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data, backgroundColor: STATUTS.map(s=>s.bg), borderColor: colors, borderWidth:2 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed}` } } }
+    }
+  });
+
+  barChart = new Chart(document.getElementById('bars'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data, backgroundColor: STATUTS.map(s=>s.bg), borderColor: colors, borderWidth:1.5, borderRadius:6 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } }, x:{ ticks:{ font:{ size:10 } } } }
+    }
+  });
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = STATUTS.map(s=>`<span><span class="dot" style="background:${s.fg}"></span>${s.label} (${c[s.id]})</span>`).join('');
+}
+
+function renderAll(){
+  renderStats();
+  renderFilterChips();
+  renderList();
+  renderCharts();
+}
+
+document.getElementById('search').addEventListener('input', renderList);
+
+document.getElementById('report-btn').addEventListener('click', generateReport);
+
+function generateReport(){
+  const c = counts();
+  const total = candidates.length;
+  const dateStr = new Date().toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
+
+  const summaryRows = STATUTS.map(s=>{
+    const pct = total ? Math.round((c[s.id]/total)*100) : 0;
+    return `<tr>
+      <td><span class="tag" style="background:${s.bg};color:${s.fg};">${s.label}</span></td>
+      <td style="text-align:right;">${c[s.id]}</td>
+      <td style="text-align:right;">${pct}%</td>
+    </tr>`;
+  }).join('');
+
+  const groups = STATUTS.map(s=>{
+    const items = candidates
+      .filter(p=>p.statut===s.id)
+      .slice()
+      .sort((a,b)=>(a.nom+a.prenom).localeCompare(b.nom+b.prenom));
+    if(items.length===0) return '';
+    const rows = items.map(p=>`<tr><td>${p.nom}</td><td>${p.prenom}</td><td>${p.tel||'—'}</td></tr>`).join('');
+    return `
+      <h3 style="color:${s.fg};">${s.label} <span style="color:#9CA0A8; font-weight:400;">(${items.length})</span></h3>
+      <table class="detail">
+        <thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <title>Reporting recrutement BTS SIO — ${dateStr}</title>
+  <style>
+    body{ font-family:'Inter',system-ui,sans-serif; color:#1B1F27; max-width:760px; margin:40px auto; padding:0 20px; }
+    h1{ font-size:20px; margin-bottom:2px; }
+    .meta{ color:#6B7079; font-size:13px; margin-bottom:24px; }
+    table{ width:100%; border-collapse:collapse; margin-bottom:28px; }
+    table.summary td, table.summary th{ padding:8px 10px; font-size:13.5px; border-bottom:1px solid #E6E3D9; }
+    table.detail th, table.detail td{ padding:6px 10px; font-size:12.5px; border-bottom:1px solid #EFEDE6; text-align:left; }
+    table.detail th{ color:#6B7079; font-weight:500; }
+    .tag{ padding:3px 9px; border-radius:999px; font-size:12px; font-weight:500; }
+    h3{ font-size:14px; margin:22px 0 8px; }
+    @media print{ button{ display:none; } }
+  </style></head>
+  <body>
+    <h1>Reporting recrutement — BTS SIO</h1>
+    <div class="meta">Généré le ${dateStr} — ${total} candidats au total</div>
+    <button onclick="window.print()" style="margin-bottom:20px; padding:8px 14px; border-radius:8px; border:1px solid #E6E3D9; background:#fff; cursor:pointer;">Imprimer / Enregistrer en PDF</button>
+    <table class="summary">
+      <thead><tr><th>Statut</th><th style="text-align:right;">Nombre</th><th style="text-align:right;">%</th></tr></thead>
+      <tbody>${summaryRows}</tbody>
+    </table>
+    ${groups}
+  </body></html>`;
+
+  const blob = new Blob([html], { type:'text/html' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+document.getElementById('export-btn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(candidates, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `suivi_bts_sio_${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('import-input').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev)=>{
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(Array.isArray(imported)){
+        candidates = imported;
+        await saveAllCandidates();
+        renderAll();
+      }
+    }catch(err){ console.error('import error', err); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+(async ()=>{
+  subscribeRealtime();
+  await loadData();
+  renderAll();
+})();
+</script>
+</body>
+</html>
