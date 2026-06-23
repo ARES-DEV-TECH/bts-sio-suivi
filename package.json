@@ -1,0 +1,7 @@
+{
+  "name": "bts-sio-suivi",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -l 3456"
+  }
+}
